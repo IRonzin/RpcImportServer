@@ -15,10 +15,11 @@ namespace ImportServer
 {
     class Program
     {
-        DocumentContext documentContext= new DocumentContext(new DbContextOptionsBuilder());
+        private static DocumentContext documentContext = new DocumentContext();
         public static void Main()
         {
             var factory = new ConnectionFactory {HostName = "localhost"};
+            //var doc= documentContext.Documents.First();
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -84,7 +85,7 @@ namespace ImportServer
         private static string GetIdTokenMethod(DocumentContext context, string parameters)
         {
             // Проверка на наличие документа в кеше из БД
-            var document = context.Documents.FirstOrDefault(x => x.Identifier == id);
+            var document = context.Documents.FirstOrDefault(x => x.Identifier == parameters);
             if (document != null)
             {
                 document.File = context.Files.FirstOrDefault(x => x.DocumentId == document.DocumentId);
@@ -93,14 +94,14 @@ namespace ImportServer
             }
 
             var json1 = JsonConvert.DeserializeObject<List<Json1>>(
-                                Utilities.GetInfoFromUrl(query + tokenPrefix + token))
-                            .FirstOrDefault(x => x.Identifier == id)
+                                Utilities.GetInfoFromUrl(parameters))
+                            .FirstOrDefault(x => x.Identifier == parameters)
                         ?? throw new Exception("No such document"); // Документа нет на сайте
 
-            var json2 = JsonConvert.DeserializeObject<Json2>(Utilities.GetInfoFromUrl(query + id + tokenPrefix + token));
+            var json2 = JsonConvert.DeserializeObject<Json2>(Utilities.GetInfoFromUrl(parameters));
 
             var json3 = JsonConvert.DeserializeObject<List<Json3>>(
-                                Utilities.GetInfoFromUrl(query + json2.Identifier + @"/version/" + json2.Modified + tokenPrefix + token))
+                                Utilities.GetInfoFromUrl(parameters + json2.Identifier + @"/version/" + json2.Modified + parameters))
                             .FirstOrDefault()
                         ?? throw new Exception("No file available"); // Для документа нет доступного файла
 
@@ -117,7 +118,7 @@ namespace ImportServer
         /// <param name="json3"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        private Document CacheDocument(Json1 json1, Json3 json3, string data)
+        private static Document CacheDocument(Json1 json1, Json3 json3, string data)
         {
             var doc = new Document()
             {

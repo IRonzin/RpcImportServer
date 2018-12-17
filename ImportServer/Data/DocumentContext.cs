@@ -14,9 +14,9 @@ namespace OpenDataViewerOld.Controllers
 
         public DbSet<File> Files { get; set; }
 
-        public DocumentContext(DbContextOptionsBuilder builder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            builder.UseNpgsql("Server=localhost;Port=5432;Database=OpenDataViewerDB;User Id=postgres;Password=postgres");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=OpenDataViewerDB;Username=postgres;Password=password");
         }
     }
 
