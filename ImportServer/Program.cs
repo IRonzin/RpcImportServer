@@ -53,7 +53,7 @@ namespace ImportServer
                     var message = Encoding.UTF8.GetString(body);
                     Console.WriteLine(message);
                     response = method(message);
-                    Console.WriteLine(response);
+                    //Console.WriteLine(response);
                 }
                 catch (Exception e)
                 {
