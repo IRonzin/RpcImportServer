@@ -15,10 +15,18 @@ namespace ImportServer
 {
     class Program
     {
+        //0e1abb1e6a5a070120b3eeb83ea4639a - пример токена
+        private static readonly string tokenPrefix = "/?access_token=";
+        private static readonly string query = "https://data.gov.ru/api/dataset/";
+
+        private static readonly string hostname = "25.29.171.129";
+        private static readonly string username = "rabbit";
+        private static readonly string password = "rabbit";
+
         private static DocumentContext documentContext = new DocumentContext();
         public static void Main()
         {
-            var factory = new ConnectionFactory {HostName = "localhost"};
+            var factory = new ConnectionFactory { HostName = hostname, UserName = username, Password = password };
             //var doc= documentContext.Documents.First();
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
@@ -96,15 +104,15 @@ namespace ImportServer
             }
 
             var json1 = JsonConvert.DeserializeObject<List<Json1>>(
-                                Utilities.GetInfoFromUrl(request.Query + request.TokenPrefix + request.Token))
+                                Utilities.GetInfoFromUrl(query + tokenPrefix + request.Token))
                             .FirstOrDefault(x => x.Identifier == request.Id);
             if (json1 == null)
                 return "No such document"; // Документа нет на сайте
 
-            var json2 = JsonConvert.DeserializeObject<Json2>(Utilities.GetInfoFromUrl(request.Query + request.Id + request.TokenPrefix + request.Token));
+            var json2 = JsonConvert.DeserializeObject<Json2>(Utilities.GetInfoFromUrl(query + request.Id + tokenPrefix + request.Token));
 
             var json3 = JsonConvert.DeserializeObject<List<Json3>>(
-                                Utilities.GetInfoFromUrl(request.Query + json2.Identifier + @"/version/" + json2.Modified + request.TokenPrefix + request.Token))
+                                Utilities.GetInfoFromUrl(query + json2.Identifier + @"/version/" + json2.Modified + tokenPrefix + request.Token))
                             .FirstOrDefault();
             if (json3 == null)
                 return "No file available"; // Для документа нет доступного файла

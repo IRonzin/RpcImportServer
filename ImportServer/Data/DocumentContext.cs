@@ -10,13 +10,15 @@ namespace OpenDataViewerOld.Controllers
 {
     public class DocumentContext : DbContext
     {
+        private readonly static string _connectionString = "Host=25.29.171.129;Port=5432;Database=OpenDataViewerDB;Username=postgres;Password=password";
+
         public DbSet<Document> Documents { get; set; }
 
         public DbSet<File> Files { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=OpenDataViewerDB;Username=postgres;Password=password");
+            optionsBuilder.UseNpgsql(_connectionString);
         }
     }
 

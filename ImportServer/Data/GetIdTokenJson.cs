@@ -11,12 +11,6 @@ namespace OpenDataViewerOld.Controllers
     /// </summary>
     public class GetIdTokenJson
     {
-        [JsonProperty("query")]
-        public string Query { get; set; }
-
-        [JsonProperty("token_prefix")]
-        public string TokenPrefix { get; set; }
-
         [JsonProperty("token")]
         public string Token { get; set; }
 
