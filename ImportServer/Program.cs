@@ -85,9 +85,9 @@ namespace ImportServer
         /// </summary>
         /// <param name="url">Строка url</param>
         /// <returns></returns>
-        private static string GetTokenMethod(string url)
+        private static string GetTokenMethod(string token)
         {
-            var html = Utilities.GetInfoFromUrl(url);
+            var html = Utilities.GetInfoFromUrl(query + tokenPrefix + token);
             return html;
         }
 
