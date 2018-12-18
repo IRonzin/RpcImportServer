@@ -10,7 +10,7 @@ namespace OpenDataViewerOld.Controllers
 {
     public class DocumentContext : DbContext
     {
-        private readonly static string _connectionString = "Host=25.29.171.129;Port=5432;Database=OpenDataViewerDB;Username=postgres;Password=password";
+        private readonly static string _connectionString = "Host=25.29.171.129;Port=5432;Database=OpenDataViewerDB;Username=postgres;Password=postgres";
 
         public DbSet<Document> Documents { get; set; }
 

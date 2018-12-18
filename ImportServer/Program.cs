@@ -19,7 +19,7 @@ namespace ImportServer
         private static readonly string tokenPrefix = "/?access_token=";
         private static readonly string query = "https://data.gov.ru/api/dataset/";
 
-        private static readonly string hostname = "25.29.171.129";
+        private static readonly string hostname = "25.76.82.0";
         private static readonly string username = "rabbit";
         private static readonly string password = "rabbit";
 
