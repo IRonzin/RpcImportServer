@@ -23,7 +23,8 @@ namespace ImportServer
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                DeclareQueueToMethod(channel, "getTokenQueue", s=> GetTokenMethod(s));
+                DeclareQueueToMethod(channel, "GetTokenQueue", s=> GetTokenMethod(s));
+                DeclareQueueToMethod(channel, "GetIdTokenQueue", s => GetIdTokenMethod(s));
                 Console.WriteLine(" Press [enter] to exit.");
                 Console.ReadLine();
             }
@@ -37,7 +38,7 @@ namespace ImportServer
             var consumer = new EventingBasicConsumer(channel);
             channel.BasicConsume(queue: queueName,
                 autoAck: false, consumer: consumer);
-            Console.WriteLine(" [x] Awaiting RPC requests");
+            Console.WriteLine(queueName+" is awaiting RPC requests to method");
 
             consumer.Received += (model, ea) =>
             {
@@ -82,28 +83,31 @@ namespace ImportServer
             return html;
         }
 
-        private static string GetIdTokenMethod(DocumentContext context, string parameters)
+        private static string GetIdTokenMethod(string jsonRequest)
         {
+            var request = JsonConvert.DeserializeObject<GetIdTokenJson>(jsonRequest);
             // Проверка на наличие документа в кеше из БД
-            var document = context.Documents.FirstOrDefault(x => x.Identifier == parameters);
+            var document = documentContext.Documents.FirstOrDefault(x => x.Identifier == request.Id);
             if (document != null)
             {
-                document.File = context.Files.FirstOrDefault(x => x.DocumentId == document.DocumentId);
+                document.File = documentContext.Files.FirstOrDefault(x => x.DocumentId == document.DocumentId);
                 return JsonConvert.SerializeObject(Utilities.ConvertToFullDocInfo(document),
                     new JsonSerializerSettings() { Formatting = Formatting.Indented });
             }
 
             var json1 = JsonConvert.DeserializeObject<List<Json1>>(
-                                Utilities.GetInfoFromUrl(parameters))
-                            .FirstOrDefault(x => x.Identifier == parameters)
-                        ?? throw new Exception("No such document"); // Документа нет на сайте
+                                Utilities.GetInfoFromUrl(request.Query + request.TokenPrefix + request.Token))
+                            .FirstOrDefault(x => x.Identifier == request.Id);
+            if (json1 == null)
+                return "No such document"; // Документа нет на сайте
 
-            var json2 = JsonConvert.DeserializeObject<Json2>(Utilities.GetInfoFromUrl(parameters));
+            var json2 = JsonConvert.DeserializeObject<Json2>(Utilities.GetInfoFromUrl(request.Query + request.Id + request.TokenPrefix + request.Token));
 
             var json3 = JsonConvert.DeserializeObject<List<Json3>>(
-                                Utilities.GetInfoFromUrl(parameters + json2.Identifier + @"/version/" + json2.Modified + parameters))
-                            .FirstOrDefault()
-                        ?? throw new Exception("No file available"); // Для документа нет доступного файла
+                                Utilities.GetInfoFromUrl(request.Query + json2.Identifier + @"/version/" + json2.Modified + request.TokenPrefix + request.Token))
+                            .FirstOrDefault();
+            if (json3 == null)
+                return "No file available"; // Для документа нет доступного файла
 
             string file = Utilities.GetInfoFromUrl(json3.Source);
             var doc = CacheDocument(json1, json3, file);
